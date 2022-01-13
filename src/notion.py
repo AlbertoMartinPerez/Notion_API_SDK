@@ -38,8 +38,23 @@ def main():
   #*************
   database_id     = "9810f5a2b05f4e0c90588b51a2d46152"
   page_id         = "4a1ddb9c3d08409e9775d1c49212be19"
+  block_id        = "73e88d7bbc6d4125936482ecb71dd26b"
 
   notion = Client(auth = NOTION_TOKEN)
+
+  #**************************************
+  #* RETRIEVE NOTION BLOCK TO SEE FORMAT 
+  #**************************************
+
+  # block_retrieved = notion.blocks.retrieve(block_id)
+  # print_json(json.dumps(block_retrieved, indent=2))
+
+  # #***********************************************
+  # #* RETRIEVE NOTION CHILDREN BLOCK TO SEE FORMAT 
+  # #***********************************************
+
+  # children_block_retrieved = notion.blocks.children.list(block_id)
+  # print_json(json.dumps(children_block_retrieved, indent=2))
 
 
   #************************
@@ -56,10 +71,8 @@ def main():
   block_heading_1 = heading(
       heading_num = 1,
       content     = "This is a header",
-      plain_text  = "Plain text",
-      link        = None,
       href        = None,
-      annotations = annotations
+      annotations = create_annotations
       (
         color         = "yellow_background"
       )
@@ -81,7 +94,7 @@ def main():
   block_todo = to_do(
     checked     = False,
     content     = "To-do task",
-    annotations = annotations
+    annotations = create_annotations
       (
         bold          = True,
         code          = True
@@ -106,8 +119,10 @@ def main():
   #*******************************
 
   notion_blocks = markdown_to_notion(
-    "# This is a heading with markdown\nThis should be a simple paragraph\n[] This is a to-do made with markdown"
+    "# This is a heading with markdown\nThis is simple text **with bolded words** ,_italic words_, `inline code` and ~strikethrough~ \n[] This is a to-do made with markdown"
   )
+
+  # print_json(json.dumps(notion_blocks, indent=2))
 
   # Make a children block with the markdown text 
   payload = make_children(notion_blocks)

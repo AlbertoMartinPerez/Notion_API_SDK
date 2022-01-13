@@ -1,3 +1,19 @@
+import re   # To split delimiters from text
+
+# There is no delimiter for underline text
+# use delimiters on either side
+markdown_delimiter = {
+    '**',   # Bold text
+    '_',    # Italic text
+    '`',    # Inline code
+    '~',    # Strikethrough text
+}
+clean_delimiter = [
+    '** ',   # Bold text
+    '_ ',    # Italic text
+    '` ',    # Inline code
+    '~ ',    # Strikethrough text
+]
 
 def make_children(
     blocks  : list) -> list:
@@ -12,7 +28,7 @@ def make_children(
         "children" : [block for block in blocks]
     }
 
-def annotations(
+def create_annotations(
     bold            : bool  = False,
     italic          : bool  = False,
     strikethrough   : bool  = False,
@@ -63,10 +79,67 @@ def annotations(
         "color": color
     }
 
+def add_text_to_block(
+    content     : str,
+    href        : str   = None,
+    annotations : dict  = {}) -> dict:
+    """
+    Create text object to be appended to a Notion block.
+
+    Parameters
+    ----------
+    - `content`     : Text for the block
+    - `href`        : The URL of any link or internal Notion mention in the text, if any.
+    - `annotations` : All annotations that apply to the rich text
+
+    Returns
+    -------
+    Dictionary with the text object for a Notion block.
+    """
+    return {
+        "type": "text",
+        "text": {
+            "content": content,
+            "link": href
+        },
+        "annotations": {
+            "bold": annotations['bold'] if 'bold' in annotations.keys() else False,
+            "italic": annotations['italic'] if 'italic' in annotations.keys() else False,
+            "strikethrough": annotations['strikethrough'] if 'strikethrough' in annotations.keys() else False,
+            "underline": annotations['underline'] if 'underline' in annotations.keys() else False,
+            "code": annotations['code'] if 'code' in annotations.keys() else False,
+            "color": annotations['color'] if 'color' in annotations.keys() else "default"
+        },
+        "plain_text": content,
+        "href": href
+    }
+
+def append_text_to_block(
+    notion_block: dict,
+    content     : str,
+    href        : str   = None,
+    annotations : dict  = {}) -> None:
+    """
+    Append text object to dictionary Notion block.
+
+    Parameters
+    ----------
+    - `notion_block`: Dictionary with Notion block information.
+    - `content`     : Text for the block
+    - `href`        : The URL of any link or internal Notion mention in the text, if any.
+    - `annotations` : All annotations that apply to the rich text
+
+    Returns
+    -------
+    Dictionary with the paragraph block.
+    """
+    block_type = notion_block['type']
+    notion_block[block_type]['text'].append(
+        add_text_to_block(content, href, annotations)
+    )
+
 def paragraph(
     content     : str,
-    plain_text  : str   = "",
-    link        : str   = None,
     href        : str   = None,
     annotations : dict  = {}) -> dict:
     """
@@ -75,8 +148,6 @@ def paragraph(
     Parameters
     ----------
     - `content`     : Text for the block
-    - `plain_text`  : The plain text without annotations for the rich text object
-    - `link`        : Link for the rich block obkect
     - `href`        : The URL of any link or internal Notion mention in the text, if any.
     - `annotations` : All annotations that apply to the rich text
 
@@ -90,23 +161,7 @@ def paragraph(
                 "paragraph":{
                     "text":
                     [
-                        {
-                            "type": "text",
-                            "text": {
-                            "content": content,
-                            "link": link
-                            },
-                            "annotations": {
-                            "bold": annotations['bold'] if 'bold' in annotations.keys() else False,
-                            "italic": annotations['italic'] if 'italic' in annotations.keys() else False,
-                            "strikethrough": annotations['strikethrough'] if 'strikethrough' in annotations.keys() else False,
-                            "underline": annotations['underline'] if 'underline' in annotations.keys() else False,
-                            "code": annotations['code'] if 'code' in annotations.keys() else False,
-                            "color": annotations['color'] if 'color' in annotations.keys() else "default"
-                            },
-                            "plain_text": plain_text,
-                            "href": href
-                        }
+                        add_text_to_block(content, href, annotations)
                     ]
                 }
             }
@@ -114,8 +169,6 @@ def paragraph(
 def heading(
     heading_num : int,
     content     : str,
-    plain_text  : str   = "",
-    link        : str   = None,
     href        : str   = None,
     annotations : dict  = {}) -> dict:
     """
@@ -125,8 +178,6 @@ def heading(
     ----------
     - `heading_num` : Either 1, 2 or 3.
     - `content`     : Text for the block
-    - `plain_text`  : The plain text without annotations for the rich text object
-    - `link`        : Link for the rich block obkect
     - `href`        : The URL of any link or internal Notion mention in the text, if any.
     - `annotations` : All annotations that apply to the rich text
 
@@ -140,23 +191,7 @@ def heading(
                 f"heading_{heading_num}":{
                     "text":
                     [
-                        {
-                            "type": "text",
-                            "text": {
-                            "content": content,
-                            "link": link
-                            },
-                            "annotations": {
-                            "bold": annotations['bold'] if 'bold' in annotations.keys() else False,
-                            "italic": annotations['italic'] if 'italic' in annotations.keys() else False,
-                            "strikethrough": annotations['strikethrough'] if 'strikethrough' in annotations.keys() else False,
-                            "underline": annotations['underline'] if 'underline' in annotations.keys() else False,
-                            "code": annotations['code'] if 'code' in annotations.keys() else False,
-                            "color": annotations['color'] if 'color' in annotations.keys() else "default"
-                            },
-                            "plain_text": plain_text,
-                            "href": href
-                        }
+                        add_text_to_block(content, href, annotations)
                     ]
                 }
             } 
@@ -164,8 +199,6 @@ def heading(
 def to_do(
     checked     : bool,
     content     : str,
-    plain_text  : str   = "",
-    link        : str   = None,
     href        : str   = None,
     annotations : dict  = {}) -> dict:
     """
@@ -175,8 +208,6 @@ def to_do(
     ----------
     - `checked`     : Either True or False.
     - `content`     : Text for the block
-    - `plain_text`  : The plain text without annotations for the rich text object
-    - `link`        : Link for the rich block obkect
     - `href`        : The URL of any link or internal Notion mention in the text, if any.
     - `annotations` : All annotations that apply to the rich text
 
@@ -190,23 +221,7 @@ def to_do(
                 "to_do":{
                     "text":
                     [
-                        {
-                            "type": "text",
-                            "text": {
-                            "content": content,
-                            "link": link
-                            },
-                            "annotations": {
-                            "bold": annotations['bold'] if 'bold' in annotations.keys() else False,
-                            "italic": annotations['italic'] if 'italic' in annotations.keys() else False,
-                            "strikethrough": annotations['strikethrough'] if 'strikethrough' in annotations.keys() else False,
-                            "underline": annotations['underline'] if 'underline' in annotations.keys() else False,
-                            "code": annotations['code'] if 'code' in annotations.keys() else False,
-                            "color": annotations['color'] if 'color' in annotations.keys() else "default"
-                            },
-                            "plain_text": plain_text,
-                            "href": href
-                        }
+                        add_text_to_block(content, href, annotations)
                     ],
                     "checked" : checked
                 }
@@ -249,10 +264,149 @@ def image(
                 }
             }  
 
+def _clean_markdown(
+    list_str    : list[str]) -> None: 
+    """
+    Erase delimiters from list of strings and empty strings.
+
+    Parameters
+    ----------
+    - `list_str`: List of strings with markdown notations. (Usually obtained after using
+    `_markdown_splitter()`)
+    """
+    # For every string, search the delimiter to remove. Then update the string from the list
+    for count, string in enumerate(list_str):
+        for delimiter in clean_delimiter:
+            if delimiter in string:
+                list_str[count] = string.replace(delimiter, '')
+    
+    # Delete empty string
+    list_str[:] = [string for string in list_str if string]
+
+def _markdown_splitter(
+    text    : str) -> list:
+    """
+    Analyze text and splits it by any markdown notation accepted in Notion.
+    The splitted text contains makdown delimiters with spaces in unwanted strings.
+    Therefore, the returned list should me cleaned using the `_clean_markdown` method.
+
+    Parameters
+    ----------
+    - `text`: String with markdown format to be converted to Notion blocks.
+
+    Returns
+    -------
+    Splitted text using the delimiters in a list.
+
+    Notes
+    -----
+    - `**`: On either side for bold text
+    - `_`:  On either side for italic text
+    - ` :   On either side for inline code
+    - `~`:  On either side for strikethrough text
+
+    Solution based on: https://www.delftstack.com/howto/python/how-to-split-string-with-multiple-delimiters-in-python/
+    and also: https://stackoverflow.com/questions/4998629/split-string-with-multiple-delimiters-in-python
+    """
+    regular_exp = '|'.join('(?={})'.format(re.escape(delim)) for delim in markdown_delimiter)
+    return re.split(regular_exp, text)
+
+def _add_block_format(
+    list_str    : list[str]) -> dict:
+    """
+    Create Notion block with annotations based on Markdown notation.
+    Only supports paragraph Notion blocks. 
+    
+    Future versions should include any block!
+    """
+
+    for count, string in enumerate(list_str):
+        # Reset format for every string
+        bold = italic = strikethrough = code = False
+
+        for delimiter in markdown_delimiter:
+            # Check if delimiter is in the string
+            if delimiter in string:
+
+                # Remove markdown delimiter for the string
+                string = string.replace(delimiter, '')
+
+                # Create block format depending on the delimiter found
+                if delimiter == '**': bold = True
+
+                elif delimiter == '_': italic = True
+
+                elif delimiter == '~': strikethrough = True
+
+                elif delimiter == '`': code = True
+
+        # If this is the first string, create a paragraph block
+        if count == 0:
+            block = paragraph(
+                        content     = string,
+                        annotations = create_annotations(
+                            bold = bold,
+                            italic = italic,
+                            strikethrough = strikethrough,
+                            code = code
+                        )
+                    )
+        # Append to paragraph block text with specific annotations if any
+        else:
+            append_text_to_block(
+                notion_block    = block,
+                content         = string,
+                annotations     = create_annotations(
+                                    bold = bold,
+                                    italic = italic,
+                                    strikethrough = strikethrough,
+                                    code = code
+                                )
+            )
+
+    return block
+
+def _markdown_notation(
+    text : str) -> dict:
+    """
+    Analyze text and splits it by any markdown notation accepted in Notion.
+    Returns a ready to use Notion block with formated text.
+
+    Only creates paragraph Notion blocks!
+
+    Parameters
+    ----------
+    - `text`: String with markdown format to be converted to Notion blocks.
+
+    Returns
+    -------
+    Dict with formated Notion block.
+
+    Notes
+    -----
+    >>> markdown_delimiter = {
+    >>>     '**',   # Bold text
+    >>>     '_',    # Italic text
+    >>>     '`',    # Inline code
+    >>>     '~',    # Strikethrough text
+    >>> }
+    """
+    splitted_text = _markdown_splitter(text)
+    
+    _clean_markdown(splitted_text)
+
+    notion_block = _add_block_format(splitted_text)
+
+    return notion_block
+    
+
+
 def markdown_to_notion(
     text : str) -> list:
     """
     Converts a text with markdown format to a list of Notion blocks.
+
+    Supports text formatting for paragraph blocks only!
 
     Parameters
     ----------
@@ -302,7 +456,7 @@ def markdown_to_notion(
 
         # Create a Notion paragraph block instead 
         else:
-            notion_block = paragraph(content = block)   # Since this is a paragraph, block only contains text
+            notion_block = _markdown_notation(block)    # Since this is a paragraph, block only contains text
         
         notion_blocks.append(notion_block)
 
