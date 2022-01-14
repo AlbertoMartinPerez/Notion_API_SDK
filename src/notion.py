@@ -102,11 +102,11 @@ def main():
   )
 
   # Create image block
-  image_url = "https://i.imgur.com/ijckbLX.png"
-  block_image = image(image_url = image_url)
+  # image_url = "https://i.imgur.com/ijckbLX.png"
+  # block_image = image(image_url = image_url)
 
   # Make a children block with the previous blocks to be appended to page
-  nested_blocks = make_children([block_heading_1, block_paragraph_1, block_paragraph_2, block_todo, block_image])
+  nested_blocks = make_children([block_heading_1, block_paragraph_1, block_paragraph_2, block_todo])#, block_image])
 
   updated_block = notion.blocks.children.append(page_id, **nested_blocks)
 
@@ -119,7 +119,9 @@ def main():
   #*******************************
 
   notion_blocks = markdown_to_notion(
-    "# This is a heading with markdown\nThis is simple text **with bolded words** ,_italic words_, `inline code` and ~strikethrough~ \n[] This is a to-do made with markdown"
+    "#This is a `code heading` with markdown _italics_\n\
+    This is simple text **with bolded words**, _italic words_, `inline code` and ~strikethrough~ \n\
+    []This is a **to-do** made with markdown"
   )
 
   # print_json(json.dumps(notion_blocks, indent=2))

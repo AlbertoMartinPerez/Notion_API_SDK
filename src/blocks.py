@@ -1,19 +1,19 @@
-import re   # To split delimiters from text
+import re
+from typing import Any   # To split delimiters from text
 
 # There is no delimiter for underline text
 # use delimiters on either side
-markdown_delimiter = {
+markdown_delimiter = [
     '**',   # Bold text
     '_',    # Italic text
-    '`',    # Inline code
     '~',    # Strikethrough text
-}
-clean_delimiter = [
-    '** ',   # Bold text
-    '_ ',    # Italic text
-    '` ',    # Inline code
-    '~ ',    # Strikethrough text
+    '`',    # Inline code
+    '#',    # Heading 1 block
+    '##',   # Heading 2 block
+    '###',  # Heading 3 block
+    '[]'    # To-do block
 ]
+
 
 def make_children(
     blocks  : list) -> list:
@@ -276,12 +276,12 @@ def _clean_markdown(
     """
     # For every string, search the delimiter to remove. Then update the string from the list
     for count, string in enumerate(list_str):
-        for delimiter in clean_delimiter:
-            if delimiter in string:
-                list_str[count] = string.replace(delimiter, '')
+        #for delimiter in clean_delimiter:
+        for delimiter in markdown_delimiter:
+            # Delete delimiter in the string which has and space on the right
+            if f"{delimiter} " in string:
+                list_str[count] = string.replace(f"{delimiter} ", ' ') # Add an space
     
-    # Delete empty string
-    list_str[:] = [string for string in list_str if string]
 
 def _markdown_splitter(
     text    : str) -> list:
@@ -312,12 +312,19 @@ def _markdown_splitter(
     return re.split(regular_exp, text)
 
 def _add_block_format(
-    list_str    : list[str]) -> dict:
+    list_str    : list[str],
+    block_type  : str,
+    block_field : Any = None) -> dict:
     """
     Create Notion block with annotations based on Markdown notation.
     Only supports paragraph Notion blocks. 
     
-    Future versions should include any block!
+    Parameters
+    ----------
+    - `list_str`    : List of strings with the text that may containg markdown notation    
+    - `block_type`  : Type of Notion block to be created
+    - `block_field` : Extra field for the specific Notion block type. Depends on the `block_type` to be created.
+
     """
 
     for count, string in enumerate(list_str):
@@ -342,15 +349,40 @@ def _add_block_format(
 
         # If this is the first string, create a paragraph block
         if count == 0:
-            block = paragraph(
-                        content     = string,
-                        annotations = create_annotations(
-                            bold = bold,
-                            italic = italic,
-                            strikethrough = strikethrough,
-                            code = code
+
+            if block_type == "paragraph":
+                block = paragraph(
+                            content     = string,
+                            annotations = create_annotations(
+                                bold = bold,
+                                italic = italic,
+                                strikethrough = strikethrough,
+                                code = code
+                            )
                         )
-                    )
+            elif block_type == "to_do":
+                block = to_do(
+                            checked     = block_field,
+                            content     = string,
+                            annotations = create_annotations(
+                                bold = bold,
+                                italic = italic,
+                                strikethrough = strikethrough,
+                                code = code
+                            )
+                        )
+            elif block_type == "heading":
+                block = heading(
+                            heading_num = block_field,
+                            content     = string,
+                            annotations = create_annotations(
+                                bold = bold,
+                                italic = italic,
+                                strikethrough = strikethrough,
+                                code = code
+                            )
+                        )
+
         # Append to paragraph block text with specific annotations if any
         else:
             append_text_to_block(
@@ -367,7 +399,9 @@ def _add_block_format(
     return block
 
 def _markdown_notation(
-    text : str) -> dict:
+    text        : str,
+    block_type  : str,
+    block_field : Any = None) -> dict:
     """
     Analyze text and splits it by any markdown notation accepted in Notion.
     Returns a ready to use Notion block with formated text.
@@ -389,13 +423,17 @@ def _markdown_notation(
     >>>     '_',    # Italic text
     >>>     '`',    # Inline code
     >>>     '~',    # Strikethrough text
+    >>>     '#',    # Heading 1 block
+    >>>     '##',   # Heading 2 block
+    >>>     '###',  # Heading 3 block
+    >>>     '[]'    # To-do block
     >>> }
     """
     splitted_text = _markdown_splitter(text)
     
     _clean_markdown(splitted_text)
 
-    notion_block = _add_block_format(splitted_text)
+    notion_block = _add_block_format(splitted_text, block_type, block_field)
 
     return notion_block
     
@@ -448,15 +486,16 @@ def markdown_to_notion(
             # Check if block should be a Heading
             if md_block in ['#', '##', '###']:
                 heading_num = int(supported_blocks[md_block].split('_')[-1])
-                notion_block = heading(heading_num = heading_num, content = text)
+                notion_block = _markdown_notation(block, "heading", heading_num)
             
             # Check if block should be a to-do
             elif md_block in ['[]']:
-                notion_block = to_do(checked = False, content = text)
+                # notion_block = to_do(checked = False, content = text)
+                notion_block = _markdown_notation(block, "to_do", False)
 
         # Create a Notion paragraph block instead 
         else:
-            notion_block = _markdown_notation(block)    # Since this is a paragraph, block only contains text
+            notion_block = _markdown_notation(block, "paragraph")    # Since this is a paragraph, block only contains text
         
         notion_blocks.append(notion_block)
 

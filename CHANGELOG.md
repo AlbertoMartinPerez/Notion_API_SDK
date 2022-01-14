@@ -3,6 +3,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com).
 
+## [0.0.3] - 2022-01-14
+### Changed
+- Updates in `blocks.py`:
+    - Updated the `_clean_markdown()` method to use `markdown_delimiter`  
+    list by adding extra spaces. Previously, it used `clean_delimiter` list.
+    - `_add_block_format()` method now accepts `block_type` adn `block_field`  
+    parameters to support any Notion block.
+
+### Deleted
+- Updates in `blocks.py`:
+    - Deleted `clean_delimiter` variable list, which was the same as  
+    `markdown_delimiter` but with added spaces for each element.
+
 ## [0.0.2] - 2022-01-13
 ### Added
 - Added `formated_notion_text_example.py` file to see how a Notion block  
