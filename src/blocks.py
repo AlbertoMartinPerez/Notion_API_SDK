@@ -278,9 +278,11 @@ def _clean_markdown(
     for count, string in enumerate(list_str):
         #for delimiter in clean_delimiter:
         for delimiter in markdown_delimiter:
+            # Check if a coma ',' was used after a markdown delimiter and also remove delimiter
+            if f"{delimiter}," in string: list_str[count] = string.replace(f"{delimiter},", ',')
+
             # Delete delimiter in the string which has and space on the right
-            if f"{delimiter} " in string:
-                list_str[count] = string.replace(f"{delimiter} ", ' ') # Add an space
+            if f"{delimiter} " in string: list_str[count] = string.replace(f"{delimiter} ", ' ') # Add an space
     
 
 def _markdown_splitter(

@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com).
 
+## [0.0.4] - 2022-01-14
+### Changed
+- Updates in `blocks.py`:
+    - Updated the `_clean_markdown()` to exclude comas next to delimiters.
+- Updates in `notion.py`:
+    - Do not use \ to separate a string into multiple lines. It will result in  
+    multiple spaces in the Notion block.
+
 ## [0.0.3] - 2022-01-14
 ### Changed
 - Updates in `blocks.py`:

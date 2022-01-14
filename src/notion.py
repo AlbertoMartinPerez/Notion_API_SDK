@@ -119,9 +119,7 @@ def main():
   #*******************************
 
   notion_blocks = markdown_to_notion(
-    "#This is a `code heading` with markdown _italics_\n\
-    This is simple text **with bolded words**, _italic words_, `inline code` and ~strikethrough~ \n\
-    []This is a **to-do** made with markdown"
+    "#This is a `code heading` with markdown _italics_\nThis is simple text **with bolded words**, _italic words_, `inline code` and ~strikethrough~\n[]This is a **to-do** made with markdown"
   )
 
   # print_json(json.dumps(notion_blocks, indent=2))
