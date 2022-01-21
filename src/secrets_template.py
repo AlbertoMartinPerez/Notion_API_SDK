@@ -3,9 +3,7 @@
 #**********************
 NOTION_TOKEN = "secret_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
-
-#*********************
-#* IMGUR PRIVATE KEYS
-#*********************
-CLIENT_ID       = "xxxxxxxxxxxxxxx"
-CLIENT_SECRET   = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+#********************
+#* DROPBOX APP TOKEN
+#********************
+DROPBOX_TOKEN = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"

@@ -3,6 +3,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com).
 
+## [0.0.5] - 2022-01-21
+### Added
+- `markdown.py` to isolate all markdown parsing functionalities in a single file.
+- `dropbox_api.py` to upload files to Dropbox and retrieve raw shared links  
+to be used as embedded into Notion.
+- `example_files` folder with sample images to be uploaded to Dropbox.
+
+### Changed
+- Updates in `blocks.py`:
+    - Minor text modifications.
+    - Added more blocks.
+- Updates in `notion.py`:
+    - Included example to know how to upload images to Dropbox and create  
+    Notion image blocks from Dropbox URLs.
+    - Updated method names to comply with modifications in `blocks.py`.
+- In `secrets_template.py` Deleted IMGUR tokens to Dropbox app token.
+
 ## [0.0.4] - 2022-01-14
 ### Changed
 - Updates in `blocks.py`:
