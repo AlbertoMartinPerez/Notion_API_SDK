@@ -3,8 +3,8 @@ from notion_client import Client
 from secrets import NOTION_TOKEN, DROPBOX_TOKEN
 
 import blocks
-import markdown
-from dropbox_api import DropboxClient
+from markdown_parser import markdown_to_notion
+from dropbox_sdk import DropboxClient
 
 def main():
   #*************
@@ -151,7 +151,7 @@ def main():
   #* CREATE BLOCKS USING MARKDOWN
   #*******************************
 
-  notion_blocks = markdown.markdown_to_notion(
+  notion_blocks = markdown_to_notion(
     "#This is a `code heading` with markdown _italics_\n'Quote block\n+Bullet list\n>**Toggle** `with inline code` :\nThis is simple text **with bolded words**, _italic words_, `inline code` and ~strikethrough~\n[]This is a **to-do** made with markdown"
   )
 

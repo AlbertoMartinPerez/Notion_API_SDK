@@ -1,7 +1,29 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+""" Notion blocks creation for Python
+
+    -------------------------------------------------------------------------
+    AUTHOR
+
+    Name:       Alberto Martín Pérez
+    Contact:    alberto.martinperez@protonmail.com      
+
+    ------------------------------------------------------------------------
+    SUMMARY
+
+    This file includes some Notion blocks as dictionaries for Python. They can
+    be used with the [notion-sdk-py](https://github.com/ramnes/notion-sdk-py) created by Guillaume Gelin ([ramnes](https://github.com/ramnes)
+    Additionally, it provides further functionalities to print blocks and see their  
+    structure, add children blocks to parent blocks and append blocks.  
+   """
+
 from rich import print_json
 import json
 
-
+#*****************************
+#* NOTION SDK FUNCTIONALITIES
+#*****************************
 def print_block(
     notion_block    : dict) -> dict:
     """
@@ -101,12 +123,12 @@ def create_annotations(
         "color": color
     }
 
-def add_text_to_block(
+def add_rich_text(
     content     : str,
     href        : str   = None,
     annotations : dict  = {}) -> dict:
     """
-    Create text object to be appended to a Notion block.
+    Create rich text object to be appended to a Notion block.
 
     Parameters
     ----------
@@ -142,7 +164,8 @@ def append_text_to_block(
     href        : str   = None,
     annotations : dict  = {}) -> None:
     """
-    Append text object to dictionary Notion block.
+    Append rich text object to dictionary Notion block.
+    Mainly used for the Notion markdown parser.
 
     Parameters
     ----------
@@ -157,8 +180,13 @@ def append_text_to_block(
     """
     block_type = notion_block['type']
     notion_block[block_type]['text'].append(
-        add_text_to_block(content, href, annotations)
+        add_rich_text(content, href, annotations)
     )
+
+
+#**************************
+#* SUPPORTED NOTION BLOCKS
+#**************************
 
 def paragraph(
     content     : str,
@@ -183,7 +211,7 @@ def paragraph(
                 "paragraph":{
                     "text":
                     [
-                        add_text_to_block(content, href, annotations)
+                        add_rich_text(content, href, annotations)
                     ]
                 }
             }
@@ -213,7 +241,98 @@ def heading(
                 f"heading_{heading_num}":{
                     "text":
                     [
-                        add_text_to_block(content, href, annotations)
+                        add_rich_text(content, href, annotations)
+                    ]
+                }
+            } 
+
+# TODO: Implement
+def callout(
+    ) -> dict:
+    """
+    """
+    pass
+
+def quote(
+    content     : str,
+    href        : str   = None,
+    annotations : dict  = {}) -> dict:
+    """
+    Create quote Notion block.
+
+    Parameters
+    ----------
+    - `content`     : Text for the block
+    - `href`        : The URL of any link or internal Notion mention in the text, if any.
+    - `annotations` : All annotations that apply to the rich text
+
+    Returns
+    -------
+    Dictionary with the quote block.
+    """
+    return  {
+                "object": "block",
+                "type": "quote",
+                "quote":{
+                    "text":
+                    [
+                        add_rich_text(content, href, annotations)
+                    ]
+                }
+            } 
+
+def bulleted_list_item(
+    content     : str,
+    href        : str   = None,
+    annotations : dict  = {}) -> dict:
+    """
+    Create bulleted list item Notion block.
+
+    Parameters
+    ----------
+    - `content`     : Text for the block
+    - `href`        : The URL of any link or internal Notion mention in the text, if any.
+    - `annotations` : All annotations that apply to the rich text
+
+    Returns
+    -------
+    Dictionary with the bulleted list item block.
+    """
+    return  {
+                "object": "block",
+                "type": "bulleted_list_item",
+                "bulleted_list_item":{
+                    "text":
+                    [
+                        add_rich_text(content, href, annotations)
+                    ]
+                }
+            }
+
+def numbered_list_item(
+    content     : str,
+    href        : str   = None,
+    annotations : dict  = {}) -> dict:
+    """
+    Create bulleted list item Notion block.
+
+    Parameters
+    ----------
+    - `content`     : Text for the block
+    - `href`        : The URL of any link or internal Notion mention in the text, if any.
+    - `annotations` : All annotations that apply to the rich text
+
+    Returns
+    -------
+    Dictionary with the bulleted list item block.
+    """
+    return  {
+                "object": "block",
+                "type": "numbered_list_item",
+                "numbered_list_item":{
+                    "text":
+                    [
+                        add_rich_text(content, href, annotations)
                     ]
                 }
             } 
@@ -243,11 +362,114 @@ def to_do(
                 "to_do":{
                     "text":
                     [
-                        add_text_to_block(content, href, annotations)
+                        add_rich_text(content, href, annotations)
                     ],
                     "checked" : checked
                 }
             }  
+
+def toggle(
+    content     : str,
+    href        : str   = None,
+    annotations : dict  = {}) -> dict:
+    """
+    Create toggle Notion block.
+
+    Parameters
+    ----------
+    - `content`     : Text for the block
+    - `href`        : The URL of any link or internal Notion mention in the text, if any.
+    - `annotations` : All annotations that apply to the rich text
+
+    Returns
+    -------
+    Dictionary with the toggle block.
+    """
+    return  {
+                "object": "block",
+                "type": "toggle",
+                "toggle":{
+                    "text":
+                    [
+                        add_rich_text(content, href, annotations)
+                    ]
+                }
+            }
+
+def code(
+    language    : str,
+    content     : str,
+    href        : str   = None,
+    annotations : dict  = {}) -> dict:
+    """
+    Create code Notion block.
+
+    Parameters
+    ----------
+    - `language`    : Coding language in code block.
+    - `content`     : Text for the block
+    - `href`        : The URL of any link or internal Notion mention in the text, if any.
+    - `annotations` : All annotations that apply to the rich text
+
+    Returns
+    -------
+    Dictionary with the code block.
+    """
+    supported_languages = ["abap", "arduino", "bash", "basic", "c", "clojure", "coffeescript", "c++", "c#", "css", "dart", "diff", "docker", "elixir", "elm", "erlang", "flow", "fortran", "f#", "gherkin", "glsl", "go", "graphql", "groovy", "haskell", "html", "java", "javascript", "json", "julia", "kotlin", "latex", "less", "lisp", "livescript", "lua", "makefile", "markdown", "markup", "matlab", "mermaid", "nix", "objective-c", "ocaml", "pascal", "perl", "php", "plain text", "powershell", "prolog", "protobuf", "python", "r", "reason", "ruby", "rust", "sass", "scala", "scheme", "scss", "shell", "sql", "swift", "typescript", "vb.net", "verilog", "vhdl", "visual basic", "webassembly", "xml", "yaml", "java/c/c++/c#"]
+    
+    # If given language is not in supported, raise error.
+    try:
+        if not language in supported_languages:
+            raise AttributeError(f"Language is not supported. Supported languages are: \n{supported_languages}")
+    except AttributeError as exc:
+        print(exc)
+    
+    return  {
+                "object": "block",
+                "type": "code",
+                "code":{
+                    "text":
+                    [
+                        add_rich_text(content, href, annotations)
+                    ],
+                    "language": language
+                }
+            } 
+
+# TODO: Implement
+def child_page(
+    ) -> dict:
+    """
+    """
+    pass
+
+# TODO: Implement
+def child_database(
+    ) -> dict:
+    """
+    """
+    pass
+
+def embed(
+    url : str) -> dict:
+    """
+    Create embed Notion block.
+
+    Parameters
+    ----------
+    - `url`   : Link to website the embed block will display.
+
+    Returns
+    -------
+    Dictionary with the image block.
+    """
+    return  {
+                "object": "block",
+                "type": "embed",
+                "embed": {
+                    "url": url
+                }
+            } 
 
 def image(
     image_url : str) -> dict:
@@ -286,157 +508,161 @@ def image(
                 }
             }  
 
-def toggle(
-    content     : str,
-    href        : str   = None,
-    annotations : dict  = {}) -> dict:
+def video(
+    url : str) -> dict:
     """
-    Create toggle Notion block.
+    Create a video Notion block.
 
     Parameters
     ----------
-    - `content`     : Text for the block
-    - `href`        : The URL of any link or internal Notion mention in the text, if any.
-    - `annotations` : All annotations that apply to the rich text
+    - `url`   : Link to video file reference.
 
     Returns
     -------
-    Dictionary with the toggle block.
+    Dictionary with the video block.
     """
     return  {
                 "object": "block",
-                "type": "toggle",
-                "toggle":{
-                    "text":
-                    [
-                        add_text_to_block(content, href, annotations)
-                    ]
-                }
-            }
-
-def bulleted_list_item(
-    content     : str,
-    href        : str   = None,
-    annotations : dict  = {}) -> dict:
-    """
-    Create bulleted list item Notion block.
-
-    Parameters
-    ----------
-    - `content`     : Text for the block
-    - `href`        : The URL of any link or internal Notion mention in the text, if any.
-    - `annotations` : All annotations that apply to the rich text
-
-    Returns
-    -------
-    Dictionary with the bulleted list item block.
-    """
-    return  {
-                "object": "block",
-                "type": "bulleted_list_item",
-                "bulleted_list_item":{
-                    "text":
-                    [
-                        add_text_to_block(content, href, annotations)
-                    ]
-                }
-            }
-
-def numbered_list_item(
-    content     : str,
-    href        : str   = None,
-    annotations : dict  = {}) -> dict:
-    """
-    Create bulleted list item Notion block.
-
-    Parameters
-    ----------
-    - `content`     : Text for the block
-    - `href`        : The URL of any link or internal Notion mention in the text, if any.
-    - `annotations` : All annotations that apply to the rich text
-
-    Returns
-    -------
-    Dictionary with the bulleted list item block.
-    """
-    return  {
-                "object": "block",
-                "type": "numbered_list_item",
-                "numbered_list_item":{
-                    "text":
-                    [
-                        add_text_to_block(content, href, annotations)
-                    ]
+                "type": "video",
+                "video": {
+                    "type": "external",
+                    "external": {
+                        "url": url
+                    }
                 }
             } 
 
-def quote(
+def file(
+    url         : str,
+    caption     : str,
     content     : str,
     href        : str   = None,
     annotations : dict  = {}) -> dict:
     """
-    Create quote Notion block.
+    Create a file Notion block.
 
     Parameters
     ----------
+    - `url`         : Link to file reference.
+    - `caption`     : Caption of the file block.
     - `content`     : Text for the block
     - `href`        : The URL of any link or internal Notion mention in the text, if any.
     - `annotations` : All annotations that apply to the rich text
 
     Returns
     -------
-    Dictionary with the quote block.
+    Dictionary with the file block.
     """
     return  {
                 "object": "block",
-                "type": "quote",
-                "quote":{
+                "type": "file",
+                "file": {
+                    "type": "external",
+                    "external": {
+                        "url": url
+                    },
                     "text":
                     [
-                        add_text_to_block(content, href, annotations)
-                    ]
-                }
-            } 
-
-def code(
-    language    : str,
-    content     : str,
-    href        : str   = None,
-    annotations : dict  = {}) -> dict:
-    """
-    Create code Notion block.
-
-    Parameters
-    ----------
-    - `language`    : Coding language in code block.
-    - `content`     : Text for the block
-    - `href`        : The URL of any link or internal Notion mention in the text, if any.
-    - `annotations` : All annotations that apply to the rich text
-
-    Returns
-    -------
-    Dictionary with the code block.
-    """
-    supported_languages = ["abap", "arduino", "bash", "basic", "c", "clojure", "coffeescript", "c++", "c#", "css", "dart", "diff", "docker", "elixir", "elm", "erlang", "flow", "fortran", "f#", "gherkin", "glsl", "go", "graphql", "groovy", "haskell", "html", "java", "javascript", "json", "julia", "kotlin", "latex", "less", "lisp", "livescript", "lua", "makefile", "markdown", "markup", "matlab", "mermaid", "nix", "objective-c", "ocaml", "pascal", "perl", "php", "plain text", "powershell", "prolog", "protobuf", "python", "r", "reason", "ruby", "rust", "sass", "scala", "scheme", "scss", "shell", "sql", "swift", "typescript", "vb.net", "verilog", "vhdl", "visual basic", "webassembly", "xml", "yaml", "java/c/c++/c#"]
-    
-    # If given language is not in supported, raise error.
-    try:
-        if not language in supported_languages:
-            raise AttributeError(f"Language is not supported. Supported languages are: \n{supported_languages}")
-    except AttributeError as exc:
-        print(exc)
-    
-    return  {
-                "object": "block",
-                "type": "code",
-                "code":{
-                    "text":
-                    [
-                        add_text_to_block(content, href, annotations)
+                        add_rich_text(content, href, annotations)
                     ],
-                    "language": language
+                },
+                "caption" : caption
+            }
+
+def pdf(
+    url : str) -> dict:
+    """
+    Create a pdf Notion block.
+
+    Parameters
+    ----------
+    - `url`   : Link to pdf file reference.
+
+    Returns
+    -------
+    Dictionary with the pdf block.
+    """
+    return  {
+                "object": "block",
+                "type": "pdf",
+                "pdf": {
+                    "type": "external",
+                    "external": {
+                        "url": url
+                    }
                 }
+            }   
+
+def bookmark(
+    url         : str,
+    caption     : str,
+    content     : str,
+    href        : str   = None,
+    annotations : dict  = {}) -> dict:
+    """
+    Create a bookmark Notion block.
+
+    Parameters
+    ----------
+    - `url`         : Link to bookmark file reference.
+    - `caption`     : Caption of the bookmark file block.
+    - `content`     : Text for the block
+    - `href`        : The URL of any link or internal Notion mention in the text, if any.
+    - `annotations` : All annotations that apply to the rich text
+
+    Returns
+    -------
+    Dictionary with the bookmark block.
+    """
+    return  {
+                "object": "block",
+                "type": "bookmark",
+                "bookmark": {
+                    "type": "external",
+                    "external": {
+                        "url": url
+                    },
+                    "text":
+                    [
+                        add_rich_text(content, href, annotations)
+                    ],
+                },
+                "caption" : caption
             } 
+
+def equation(
+    expression : str) -> dict:
+    """
+    Create an equation Notion block.
+
+    Parameters
+    ----------
+    - `expression`   : A KaTeX compatible string.
+
+    Returns
+    -------
+    Dictionary with the equation block.
+    """
+    return  {
+                "object": "block",
+                "type": "equation",
+                "equation": {
+                    "expression": expression
+                }
+            }  
+
+def divider() -> dict:
+    """
+    Create divider Notion block.
+
+    Returns
+    -------
+    Dictionary with divider block.
+    """
+    return {
+    "type": "divider",
+    "divider": {}
+    }
 
 def table_of_contents() -> dict:
     """
@@ -451,15 +677,64 @@ def table_of_contents() -> dict:
     "table_of_contents": {}
     }
 
-def divider() -> dict:
+def breadcrumb() -> dict:
     """
-    Create divider Notion block.
+    Create breadcrumb Notion block.
 
     Returns
     -------
-    Dictionary with divider block.
+    Dictionary with breadcrumb block.
     """
     return {
-    "type": "divider",
-    "divider": {}
+    "type": "breadcrumb",
+    "breadcrumb": {}
     }
+
+# TODO: Implement
+def columns(
+    ) -> dict:
+    """
+    """
+    pass
+
+#?: Should be implemented? They are only returned as a response and cannot be created via de API.
+def child_database(
+    ) -> dict:
+    """
+    """
+    pass
+
+# TODO: Implement
+def template(
+    ) -> dict:
+    """
+    """
+    pass
+
+# TODO: Implement
+def link_to_page(
+    ) -> dict:
+    """
+    """
+    pass
+
+# TODO: Implement
+def synced_block(
+    ) -> dict:
+    """
+    """
+    pass
+
+# TODO: Implement
+def table(
+    ) -> dict:
+    """
+    """
+    pass
+
+# TODO: Implement
+def table_row(
+    ) -> dict:
+    """
+    """
+    pass

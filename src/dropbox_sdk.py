@@ -1,10 +1,27 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+""" Dropbox SDK using the Dropbox API in Python
+
+    -------------------------------------------------------------------------
+    AUTHOR
+
+    Name:       Alberto Martín Pérez
+    Contact:    alberto.martinperez@protonmail.com      
+
+    ------------------------------------------------------------------------
+    SUMMARY
+
+    This file includes the functionality to view all files from a Dropbox  
+    directory, upload all files from a local path and retrieve a dictionary  
+    with the name of the uploaded file as key and its raw shared link URL as  
+    value.
+   """
+
 from typing import List
 import dropbox
 from dropbox import exceptions, sharing
 import os
-
-# LEER AQUÍ
-# https://blog.artegrafico.net/la-api-v2-de-dropbox-para-python-3-para-que-sirve-y-como-utilizarla-paso-a-paso
 
 class DropboxClient():
 

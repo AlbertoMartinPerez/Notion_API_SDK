@@ -1,3 +1,22 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+""" Markdown parser for Notion API in Python
+
+    -------------------------------------------------------------------------
+    AUTHOR
+
+    Name:       Alberto Martín Pérez
+    Contact:    alberto.martinperez@protonmail.com      
+
+    ------------------------------------------------------------------------
+    SUMMARY
+
+    This file includes the functionality to parse markdown format text to  
+    Notion blocks. You can format text and create multiple formatted Notion  
+    blocks with a single string. 
+   """
+
 import re
 from typing import Any   # To split delimiters from text
 
