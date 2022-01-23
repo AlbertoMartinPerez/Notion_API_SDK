@@ -3,6 +3,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com).
 
+## [1.0.1] - 2022-01-23
+### Added
+- In `blocks.py`:
+    - Added `add_icon()` method to include either an `emoji` or `external`  
+    icon to a Notion rich object.
+    - Support to new Notion blocks:
+        - `callout`
+- In `notion_example.py` added how to construct `callout` blocks.
+- In `dropbox_sdk.py` added the `create_folder()` method to create a folder  
+inside Dropbox.
+
+### Deleted
+- In `dropbox_sdk.py`:
+    - The `view_files()` method.
+
+### Changed
+- Fixed `upload_all_files()` method from `DropboxClient` class in  
+`dropbox_sdk.py` to support more file extensions.
+- In `blocks.py`, `add_children()` method now checks if parent block  
+support appending children blocks.
+
 ## [1.0.0] - 2022-01-22
 - First major version because, why not? :)
 ### Added

@@ -36,7 +36,7 @@ def print_block(
     print(f"Printing {notion_block['type']} Notion block")
     print_json(json.dumps(notion_block, indent=2))
 
-def add_children_to_block(
+def add_children(
     parent          : dict,
     children        : dict) -> dict:
     """
@@ -44,35 +44,62 @@ def add_children_to_block(
 
     Parameters
     ----------
-    - `parent`      : Notion parent block to append children
-    - `children`    :
+    - `parent`      : Notion parent block to append children.
+    - `children`    : Notion children block to append.
 
     Returns
     -------
     Dictionary with Notion format to be used as children
     """
+    # List of Notion blocks that support children objects
+    support_children = [
+        'paragraph', 
+        'bulleted_list_item', 
+        'numbered_list_item', 
+        'toggle', 
+        'to_do', 
+        'quote', 
+        'callout', 
+        'synced_block', 
+        'template', 
+        'column', 
+        'child_page', 
+        'child_database', 
+        'header_1', 
+        'header_2', 
+        'header_3', 
+        'table'
+    ]
 
-    # Create 'children' key and add block
-    if 'children' not in parent[parent['type']]:
-        parent[parent['type']]['children'] = [children]
-    # If there is already a children in the block, append the new one
-    else:
-        parent[parent['type']]['children'].append(children)
+    # Check if parent block type can support children
+    if parent['type'] in support_children:
+        # Create 'children' key and add block
+        if 'children' not in parent[parent['type']]:
+            parent[parent['type']]['children'] = [children]
+        # If there is already a children in the block, append the new one
+        else:
+            parent[parent['type']]['children'].append(children)
 
 def append_blocks(
-    blocks  : list) -> list:
+    blocks  : list) -> dict:
     """
-    Make a children Notion block to be appended to anything (like a page). 
+    Create a children object. It consists of an array of Notion block objects
+    (or dictionaries). Useful when appending a set of blocks to anything like  
+    a Notion page.
 
     Parameters
     ----------
     - `blocks`: List of Notion block dictionaries.
+
+    Return
+    ------
+    Dictionary with `children` key and an array of Notion dictionary blocks.
     """
     return {
         "children" : [block for block in blocks]
     }
 
-def create_annotations(
+def add_annotations(
     bold            : bool  = False,
     italic          : bool  = False,
     strikethrough   : bool  = False,
@@ -158,7 +185,7 @@ def add_rich_text(
         "href": href
     }
 
-def append_text_to_block(
+def append_rich_text(
     notion_block: dict,
     content     : str,
     href        : str   = None,
@@ -183,6 +210,41 @@ def append_text_to_block(
         add_rich_text(content, href, annotations)
     )
 
+def add_icon(
+    icon_type   : str,
+    icon_str    : str) -> dict:
+    """
+    Adds icon to rich block.
+
+    Parameters
+    ----------
+    - `icon_type`   : Type of icon. Valid options are `emoji` or `external` for URL image.
+    - `icon_str`    : Emoji string or external link.
+
+    Returns
+    -------
+    Dictionary with an icon object.
+    """
+    supported_icon_types = ['emoji', 'external']
+
+    # Check if input icon type is supported
+    if icon_type in supported_icon_types:
+
+        if icon_type == 'emoji':
+            return {
+                    "type": icon_type,
+                    icon_type : icon_str
+                }
+        elif icon_type == 'external':
+            return {
+                    "type": icon_type,
+                    icon_type : {
+                        'url' : icon_str
+                    }
+                }
+    else:
+        print(f"Incorrect icon_type. It should be 'emoji' o 'external'. Provided {icon_type}")
+        return None
 
 #**************************
 #* SUPPORTED NOTION BLOCKS
@@ -246,12 +308,39 @@ def heading(
                 }
             } 
 
-# TODO: Implement
 def callout(
-    ) -> dict:
+    icon_type   : str,
+    icon_str    : str   = "💡",
+    content     : str   = None,
+    href        : str   = None,
+    annotations : dict  = {}) -> dict:
     """
+    Create callout Notion block.
+    Please note that it is not possible to change the color of the entire callout block
+    through the Notion API. Only for the text inside.
+
+    Parameters
+    ----------
+    - `icon_type`   : Type of icon. Valid options are `emoji` or `external` for URL image.
+    - `icon_str`    : Emoji string or external link.
+    - `content`     : Text for the block.
+    - `href`        : The URL of any link or internal Notion mention in the text, if any.
+    - `annotations` : All annotations that apply to the rich text.
+
+    Returns
+    -------
+    Dictionary with the callout block.
     """
-    pass
+    return  {
+                "object": "block",
+                "type": "callout",
+                "callout": {
+                    "text": [
+                        add_rich_text(content, href, annotations)
+                    ],
+                    "icon" : add_icon(icon_type, icon_str)
+                }
+            }
 
 def quote(
     content     : str,

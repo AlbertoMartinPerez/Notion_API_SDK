@@ -63,13 +63,14 @@ Currently the `blocks.py` provide Python dictionaries for the Notion blocks
 included in the table below. For further information, you can visit the official  
 Notion API block reference using the links in the table. If you want to know  
 how to create this blocks in Python, open the `notion.py` file for examples.
+
 |    Notion block    | Support |
 |:------------------:|:-------:|
 |      [paragraph](https://developers.notion.com/reference/block#paragraph-blocks)     |    ✔️    |
 |      [heading 1](https://developers.notion.com/reference/block#heading-one-blocks)     |    ✔️    |
 |      [heading 2](https://developers.notion.com/reference/block#heading-two-blocks)     |    ✔️    |
 |      [heading 3](https://developers.notion.com/reference/block#heading-three-blocks)     |    ✔️    |
-|       [callout](https://developers.notion.com/reference/block#callout-blocks)      |    ❌    |
+|       [callout](https://developers.notion.com/reference/block#callout-blocks)      |    ✔️    |
 |        [quote](https://developers.notion.com/reference/block#quote-blocks)       |    ✔️    |
 | [bulleted_list_item](https://developers.notion.com/reference/block#bulleted-list-item-blocks) |    ✔️    |
 | [numbered_list_item](https://developers.notion.com/reference/block#numbered-list-item-blocks) |    ✔️    |

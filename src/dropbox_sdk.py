@@ -35,27 +35,6 @@ class DropboxClient():
         except dropbox.auth.AuthError as err:
             print(err)
 
-    def view_files(
-        self,
-        dir : str = '') -> None:
-        """
-        Lists information of every file in specific `dir`.
-        """
-        #* List in directory all files
-        dir = ''
-        data = self.dbx.files_list_folder( path=dir )
-
-        for entry in data.entries:
-            if hasattr(entry, 'shared_folder_id'):
-                print(entry.name+'/')
-            else:
-                print(f"File name: {entry.name} \t File size: {entry.size}")
-
-            file = f'/{entry.name}'
-            file_metadata = self.dbx.files_get_metadata(path=file)
-            server_rev = file_metadata.rev
-            server_modified = file_metadata.server_modified
-            print('file modifed: ' + server_modified.strftime("%m/%d/%y") + ' | file revision: ' + server_rev)
 
     @staticmethod
     def get_raw_url(url : str) -> str:
@@ -77,70 +56,126 @@ class DropboxClient():
         else:
             print(f"Given URL is not from Dropbox.")
 
-    def upload_all_files(
+    def create_folder(
         self,
-        dropbox_dir : str,
-        local_dir   : str) -> List[str]:
+        path        : str,
+        autorename  : bool) -> None:
         """
-        Uploads all files from local directory to an specific Dropbox directory.
-        Returns a list with raw shared links for every file uploaded.
-
-        ONLY SUPPORTS `.png` FILES!
+        Creates a folder in a specific Dropbox directory using the 
+        `files_create_folder_v2()` method.
 
         Parameters
         ----------
-        - `dropbox_dir`:    Dropbox directory to upload the files.
+        - `path`:       Path in the user’s Dropbox to create.
+        - `autorename`: If there’s a conflict, have the Dropbox server try to autorename the folder to avoid the conflict.
+        """
+        try:
+            self.dbx.files_create_folder_v2(
+                path        = f"{path}",
+                autorename  = autorename
+            )
+        except exceptions.ApiError as err:
+            print(f"Error creating folder {path}. See error for details:\n{err}")
+
+    def upload_all_files(
+        self,
+        dropbox_dir : str,
+        local_dir   : str,
+        folder_dir  : str) -> dict:
+        """
+        Uploads all files from local directory to an specific folder directory
+        inside a Dropbox directory.
+        Returns a list with raw shared links for every file uploaded.
+
+        ONLY SUPPORTS `.json`, `.txt`, `.png`, `.log` FILES!
+
+        Parameters
+        ----------
+        - `dropbox_dir`:    Dropbox directory to upload the files and create new folders.
         - `local_dir`:      Local directory with files to upload.
+        - `folder_dir`:     Name of the new folder to upload the files
 
         Returns
         -------
-        A list with raw shared links for every file uploaded.
+        A dict with raw shared links as values for every file uploaded as keys.
         """
-        raw_urls = []
+        extension_support = [
+            '.json', 
+            '.txt', 
+            '.png', 
+            '.log'
+            ]
+
+        raw_urls = {}
+
+        # Create folder to upload all files
+        root_folder = f"{dropbox_dir}/{folder_dir}"
+        self.create_folder(
+            path        = root_folder,
+            autorename  = False
+        )
+
 
         # Get all files and directories
         for dir, dirs, files in os.walk(local_dir):
+
             # Upload the file and get the shared link to be embedded into Notion
             for file in files:
-                # Check if file is an image
-                if '.png' in file:
-                    try:
-                        print(f"Uploading local file ({local_dir+file}) to ({dropbox_dir+file})")
 
-                        with open(f"{local_dir}{file}", 'rb' ) as f:
-                            self.dbx.files_upload(f=f.read(), path=f"{dropbox_dir}/{file}", mode=dropbox.files.WriteMode.overwrite, mute=True)
+                abs_dir     = os.path.abspath(dir)
+                abs_file    = os.path.join(abs_dir, file)
+
+                # Check if file extension is supported
+                if f".{file.split('.')[-1]}" in extension_support:
+                    try:
+                        print(f"Uploading local file ({abs_file}) to ({dropbox_dir}/{folder_dir}/{file})")
+                        with open(f"{abs_file}", 'rb' ) as f:
+                            self.dbx.files_upload(f=f.read(), path=f"{dropbox_dir}/{folder_dir}/{file}", mode=dropbox.files.WriteMode.overwrite, mute=True)
 
                     except exceptions.ApiError as err:
-                        print(f"Uploading file {file} failed with errpr: {err}")
+                        print(f"Uploading file {file} failed with error: {err}")
                     
                     # Get file URL
                     try:
-                        shared_link_metadata = self.dbx.sharing_create_shared_link_with_settings(f"{dropbox_dir}/{file}")
+                        shared_link_metadata = self.dbx.sharing_create_shared_link_with_settings(f"{dropbox_dir}/{folder_dir}/{file}")
                         file_url = self.get_raw_url(shared_link_metadata.url)
-                        raw_urls.append(file_url)
+                        # Create key in dictionary with file name and raw URL as value
+                        if file not in raw_urls: 
+                            raw_urls[file] = file_url
+                        # If key exists, then just append the raw URL
+                        else:
+                            raw_urls[file].append(file_url)
 
                     except exceptions.ApiError as err:
                         # Check if file share link already exists
                         if err.error.is_shared_link_already_exists():
-                            print(f"Error: Shared link already exists!")
-                            print(f"Returning existing shared link...")
+                            print(f"\tError: Shared link already exists! Returning existing shared link...")
                             shared_link_exists : sharing.SharedLinkAlreadyExistsMetadata = err.error.get_shared_link_already_exists()
                             if shared_link_exists.is_metadata():
                                 shared_link_metadata = shared_link_exists.get_metadata()
                                 file_url = self.get_raw_url(shared_link_metadata.url)
-                                raw_urls.append(file_url)
+                                # Create key in dictionary with file name and raw URL as value
+                                if file not in raw_urls: 
+                                    raw_urls[file] = file_url
+                                # If key exists, then just append the raw URL
+                                else:
+                                    raw_urls[file].append(file_url)
         
         return raw_urls
 
+
 if __name__ == "__main__":
+    import datetime
+    timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     #**************************
     #* UPLOAD IMAGES TO DROPBOX
     #**************************
     from secrets import DROPBOX_TOKEN
     dbx = DropboxClient(DROPBOX_TOKEN)
-    dbx.view_files('')
+    
     raw_file_urls = dbx.upload_all_files(
         dropbox_dir = '',
-        local_dir   = "./example_files/"
+        local_dir   = "./example_files/",
+        folder_dir  = f"{os.path.splitext(os.path.basename(__file__))[0]}_{timestamp}"
     )
     print(f"Printing raw file URLs: {raw_file_urls}")

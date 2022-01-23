@@ -1,4 +1,3 @@
-import requests
 from notion_client import Client
 from secrets import NOTION_TOKEN, DROPBOX_TOKEN
 
@@ -6,23 +5,29 @@ import blocks
 from markdown_parser import markdown_to_notion
 from dropbox_sdk import DropboxClient
 
+import datetime
+import os
+
 def main():
   #*************
   #* NOTION IDS
   #*************
   database_id     = "9810f5a2b05f4e0c90588b51a2d46152"
   page_id         = "4a1ddb9c3d08409e9775d1c49212be19"
-  block_id        = "73e88d7bbc6d4125936482ecb71dd26b"
+  block_id        = "3e89631096b845529543f71286acb909"
 
   notion = Client(auth = NOTION_TOKEN)
+
 
   #**************************************
   #* RETRIEVE NOTION BLOCK TO SEE FORMAT 
   #**************************************
 
-  # block_retrieved = notion.blocks.retrieve('f9ae26d4c9674122acc435909c5f350c')
+  # block_retrieved = notion.blocks.retrieve(block_id)
 
   # blocks.print_block(block_retrieved)
+
+  # return 0
 
   #***********************************************
   #* RETRIEVE NOTION CHILDREN BLOCK TO SEE FORMAT 
@@ -34,13 +39,18 @@ def main():
   #**************************
   #* UPLOAD IMAGES TO DROPBOX
   #**************************
+  timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+
   dropbox = DropboxClient(DROPBOX_TOKEN)
-  dropbox.view_files('')
+
   raw_file_urls = dropbox.upload_all_files(
     dropbox_dir = '',
-    local_dir   = "./example_files/"
+    local_dir   = "./example_files/",
+    folder_dir  = f"{os.path.splitext(os.path.basename(__file__))[0]}_{timestamp}"
   )
+  
   print(f"Printing raw file URLs: {raw_file_urls}")
+  raw_file_keys = list(raw_file_urls.keys())
 
 
   #************************
@@ -58,7 +68,7 @@ def main():
       heading_num = 1,
       content     = "This is a header",
       href        = None,
-      annotations = blocks.create_annotations
+      annotations = blocks.add_annotations
       (
         color         = "yellow_background"
       )
@@ -80,7 +90,7 @@ def main():
   block_todo = blocks.to_do(
     checked     = False,
     content     = "To-do task",
-    annotations = blocks.create_annotations
+    annotations = blocks.add_annotations
       (
         bold          = True,
         code          = True
@@ -96,7 +106,7 @@ def main():
   # Create numbered list item block
   block_number_list_1 = blocks.numbered_list_item(
     content   = 'This is the first block of a numbered list item',
-    annotations = blocks.create_annotations
+    annotations = blocks.add_annotations
       (
         bold          = True,
       )
@@ -105,7 +115,7 @@ def main():
   # Create numbered list item block
   block_number_list_2 = blocks.numbered_list_item(
     content   = 'This is the second block of a numbered list item',
-    annotations = blocks.create_annotations
+    annotations = blocks.add_annotations
       (
         bold          = True,
       )
@@ -114,7 +124,7 @@ def main():
   # Create quote block
   block_quote = blocks.quote(
     content   = 'This is a quote block',
-    annotations = blocks.create_annotations
+    annotations = blocks.add_annotations
       (
         italic          = True,
       )
@@ -123,23 +133,52 @@ def main():
   # Create toggle block
   block_toggle = blocks.toggle(
     content   = 'This is a toggle block',
-    annotations = blocks.create_annotations
+    annotations = blocks.add_annotations
       (
         bold          = True,
       )
   )
 
-  # Create image block from image uploaded to Dropbox
-  block_image = blocks.image(image_url = raw_file_urls[0])
-
   # Append number list items inside thte toggle block
-  blocks.add_children_to_block(parent = block_toggle, children = block_number_list_1)
-  blocks.add_children_to_block(parent = block_toggle, children = block_number_list_2)
+  blocks.add_children(parent = block_toggle, children = block_number_list_1)
+  blocks.add_children(parent = block_toggle, children = block_number_list_2)
 
-  blocks.add_children_to_block(parent = block_paragraph_2, children = block_todo)
+  blocks.add_children(parent = block_paragraph_2, children = block_todo)
+
+  # Create emoji callout block
+  block_callout_emoji = blocks.callout(
+    icon_type   = 'emoji',
+    icon_str    = "🐶",
+    content     = 'This is a callout with emoji icon created from Python',
+    href        = None,
+    annotations = blocks.add_annotations(
+      bold = True
+    )
+  )
+
+  # Create callout block with external icon
+  block_callout_external = blocks.callout(
+    icon_type   = 'external',
+    icon_str    = "https://img.icons8.com/ios/250/000000/barcode.png",
+    content     = 'This is a callout with external icon created from Python',
+    href        = None,
+    annotations = blocks.add_annotations(
+      bold = True
+    )
+  )
+
+  # Create image block from image uploaded to Dropbox
+  block_image = blocks.image(image_url = raw_file_urls[raw_file_keys[-1]])
+
+  blocks.add_children(parent = block_callout_emoji, children = block_image)
+
+  # Create equation block
+  block_equation = blocks.equation(
+    expression  = "\\frac{{ - b \pm \sqrt {b^2 - 4ac} }}{{2a}}"
+  )
 
   # Make a children block with the previous blocks to be appended to page
-  nested_blocks = blocks.append_blocks([block_table_of_contents, block_divider, block_heading_1, block_paragraph_1, block_paragraph_2, block_code, block_quote, block_toggle, block_image])
+  nested_blocks = blocks.append_blocks([block_table_of_contents, block_divider, block_heading_1, block_paragraph_1, block_paragraph_2, block_code, block_quote, block_toggle, block_callout_emoji, block_callout_external, block_equation])# block_image])
 
   updated_block = notion.blocks.children.append(page_id, **nested_blocks)
 
