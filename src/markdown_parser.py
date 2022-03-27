@@ -21,6 +21,7 @@ import re
 from typing import Any   # To split delimiters from text
 
 import blocks
+from helpers import add_annotations
 
 # TODO: Add slash commands: https://cheatsheets.namaraii.com/notion.html
 
@@ -130,7 +131,7 @@ def _add_block_format(
             if block_type == "paragraph":
                 block = blocks.paragraph(
                             content     = string,
-                            annotations = blocks.add_annotations(
+                            annotations = add_annotations(
                                 bold = bold,
                                 italic = italic,
                                 strikethrough = strikethrough,
@@ -141,7 +142,7 @@ def _add_block_format(
                 block = blocks.to_do(
                             checked     = special_field,
                             content     = string,
-                            annotations = blocks.add_annotations(
+                            annotations = add_annotations(
                                 bold = bold,
                                 italic = italic,
                                 strikethrough = strikethrough,
@@ -152,7 +153,7 @@ def _add_block_format(
                 block = blocks.heading(
                             heading_num = special_field,
                             content     = string,
-                            annotations = blocks.add_annotations(
+                            annotations = add_annotations(
                                 bold = bold,
                                 italic = italic,
                                 strikethrough = strikethrough,
@@ -162,7 +163,7 @@ def _add_block_format(
             elif block_type == "toggle":
                 block = blocks.toggle(
                             content     = string,
-                            annotations = blocks.add_annotations(
+                            annotations = add_annotations(
                                 bold = bold,
                                 italic = italic,
                                 strikethrough = strikethrough,
@@ -172,7 +173,7 @@ def _add_block_format(
             elif block_type == "bulleted_list_item":
                 block = blocks.bulleted_list_item(
                             content     = string,
-                            annotations = blocks.add_annotations(
+                            annotations = add_annotations(
                                 bold = bold,
                                 italic = italic,
                                 strikethrough = strikethrough,
@@ -182,7 +183,7 @@ def _add_block_format(
             elif block_type == "quote":
                 block = blocks.quote(
                             content     = string,
-                            annotations = blocks.add_annotations(
+                            annotations = add_annotations(
                                 bold = bold,
                                 italic = italic,
                                 strikethrough = strikethrough,
@@ -195,7 +196,7 @@ def _add_block_format(
             blocks.append_rich_text(
                 notion_block    = block,
                 content         = string,
-                annotations     = blocks.add_annotations(
+                annotations     = add_annotations(
                                     bold = bold,
                                     italic = italic,
                                     strikethrough = strikethrough,

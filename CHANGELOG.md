@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com).
 
+## [1.0.2] - 2022-3-27
+### Added
+- Added examples on how to use blocks:
+    - `blocks_example.py`
+
 ## [1.0.1] - 2022-01-23
 ### Added
 - In `blocks.py`:

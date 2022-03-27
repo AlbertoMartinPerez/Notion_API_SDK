@@ -1,23 +1,47 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+""" Notion block creations and data upload to Dropbox for external links
+
+    -------------------------------------------------------------------------
+    AUTHOR
+
+    Name:       Alberto Martín Pérez
+    Contact:    alberto.martinperez@protonmail.com      
+
+    ------------------------------------------------------------------------
+    SUMMARY
+
+    This file shows how to create Notion blocks and append them to an existing  
+    Notion page. It also shows how to upload files from a local directory to  
+    Dropbox and then extract the raw shared links to be used in Notion blocks.
+
+   """
+
 from notion_client import Client
 from secrets import NOTION_TOKEN, DROPBOX_TOKEN
 
-import blocks
+import blocks, pages
+from helpers import(
+  add_annotations
+)
 from markdown_parser import markdown_to_notion
 from dropbox_sdk import DropboxClient
 
 import datetime
 import os
 
+from rich import print_json
+import json
+
 def main():
+
+  notion = Client(auth = NOTION_TOKEN)
   #*************
   #* NOTION IDS
   #*************
-  database_id     = "9810f5a2b05f4e0c90588b51a2d46152"
   page_id         = "4a1ddb9c3d08409e9775d1c49212be19"
-  block_id        = "3e89631096b845529543f71286acb909"
-
-  notion = Client(auth = NOTION_TOKEN)
-
+  block_id        = "55793819476e42f5b53d5af5b1c24056"
 
   #**************************************
   #* RETRIEVE NOTION BLOCK TO SEE FORMAT 
@@ -26,15 +50,6 @@ def main():
   # block_retrieved = notion.blocks.retrieve(block_id)
 
   # blocks.print_block(block_retrieved)
-
-  # return 0
-
-  #***********************************************
-  #* RETRIEVE NOTION CHILDREN BLOCK TO SEE FORMAT 
-  #***********************************************
-
-  # children_block_retrieved = notion.blocks.children.list(block_id)
-  # blocks.print_block(children_block_retrieved)
 
   #**************************
   #* UPLOAD IMAGES TO DROPBOX
@@ -68,7 +83,7 @@ def main():
       heading_num = 1,
       content     = "This is a header",
       href        = None,
-      annotations = blocks.add_annotations
+      annotations = add_annotations
       (
         color         = "yellow_background"
       )
@@ -90,7 +105,7 @@ def main():
   block_todo = blocks.to_do(
     checked     = False,
     content     = "To-do task",
-    annotations = blocks.add_annotations
+    annotations = add_annotations
       (
         bold          = True,
         code          = True
@@ -106,7 +121,7 @@ def main():
   # Create numbered list item block
   block_number_list_1 = blocks.numbered_list_item(
     content   = 'This is the first block of a numbered list item',
-    annotations = blocks.add_annotations
+    annotations = add_annotations
       (
         bold          = True,
       )
@@ -115,7 +130,7 @@ def main():
   # Create numbered list item block
   block_number_list_2 = blocks.numbered_list_item(
     content   = 'This is the second block of a numbered list item',
-    annotations = blocks.add_annotations
+    annotations = add_annotations
       (
         bold          = True,
       )
@@ -124,7 +139,7 @@ def main():
   # Create quote block
   block_quote = blocks.quote(
     content   = 'This is a quote block',
-    annotations = blocks.add_annotations
+    annotations = add_annotations
       (
         italic          = True,
       )
@@ -133,7 +148,7 @@ def main():
   # Create toggle block
   block_toggle = blocks.toggle(
     content   = 'This is a toggle block',
-    annotations = blocks.add_annotations
+    annotations = add_annotations
       (
         bold          = True,
       )
@@ -151,7 +166,7 @@ def main():
     icon_str    = "🐶",
     content     = 'This is a callout with emoji icon created from Python',
     href        = None,
-    annotations = blocks.add_annotations(
+    annotations = add_annotations(
       bold = True
     )
   )
@@ -162,7 +177,7 @@ def main():
     icon_str    = "https://img.icons8.com/ios/250/000000/barcode.png",
     content     = 'This is a callout with external icon created from Python',
     href        = None,
-    annotations = blocks.add_annotations(
+    annotations = add_annotations(
       bold = True
     )
   )
@@ -178,7 +193,7 @@ def main():
   )
 
   # Make a children block with the previous blocks to be appended to page
-  nested_blocks = blocks.append_blocks([block_table_of_contents, block_divider, block_heading_1, block_paragraph_1, block_paragraph_2, block_code, block_quote, block_toggle, block_callout_emoji, block_callout_external, block_equation])# block_image])
+  nested_blocks = blocks.append_blocks([block_table_of_contents, block_divider, block_heading_1, block_paragraph_1, block_paragraph_2, block_code, block_quote, block_toggle, block_callout_emoji, block_callout_external, block_equation])
 
   updated_block = notion.blocks.children.append(page_id, **nested_blocks)
 

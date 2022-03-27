@@ -21,6 +21,10 @@
 from rich import print_json
 import json
 
+from helpers import (
+    add_icon, add_rich_text
+)
+
 #*****************************
 #* NOTION SDK FUNCTIONALITIES
 #*****************************
@@ -99,92 +103,6 @@ def append_blocks(
         "children" : [block for block in blocks]
     }
 
-def add_annotations(
-    bold            : bool  = False,
-    italic          : bool  = False,
-    strikethrough   : bool  = False,
-    underline       : bool  = False,
-    code            : bool  = False,
-    color           : str   = 'default' ) -> dict:
-    """
-    Generates annotations dictionary to apply to rich text objects.
-
-    Parameters
-    ----------
-    - `bold`: Whether the text is bolded.
-    - `italic`: Whether the text is italicized.
-    - `strikethrough`: Whether the text is struck through.
-    - `underline`: Whether the text is underlined.
-    - `code`: Whether the text is code style.
-    - `color`: Color of the text. Possible values are:
-        - `default`
-        - `gray`
-        - `brown`
-        - `orange`
-        - `yellow`
-        - `green`
-        - `blue`
-        - `purple`
-        - `pink`
-        - `red`
-        - `gray_background`
-        - `brown_background`
-        - `orange_background`
-        - `yellow_background`
-        - `green_background`
-        - `blue_background`
-        - `purple_background`
-        - `pink_background`
-        - `red_background`
-    
-    Returns
-    -------
-    Dictionary with annotations for the rich text object.
-    """
-    return {
-        "bold": bold,
-        "italic": italic,
-        "strikethrough": strikethrough,
-        "underline": underline,
-        "code": code,
-        "color": color
-    }
-
-def add_rich_text(
-    content     : str,
-    href        : str   = None,
-    annotations : dict  = {}) -> dict:
-    """
-    Create rich text object to be appended to a Notion block.
-
-    Parameters
-    ----------
-    - `content`     : Text for the block
-    - `href`        : The URL of any link or internal Notion mention in the text, if any.
-    - `annotations` : All annotations that apply to the rich text
-
-    Returns
-    -------
-    Dictionary with the text object for a Notion block.
-    """
-    return {
-        "type": "text",
-        "text": {
-            "content": content,
-            "link": href
-        },
-        "annotations": {
-            "bold": annotations['bold'] if 'bold' in annotations.keys() else False,
-            "italic": annotations['italic'] if 'italic' in annotations.keys() else False,
-            "strikethrough": annotations['strikethrough'] if 'strikethrough' in annotations.keys() else False,
-            "underline": annotations['underline'] if 'underline' in annotations.keys() else False,
-            "code": annotations['code'] if 'code' in annotations.keys() else False,
-            "color": annotations['color'] if 'color' in annotations.keys() else "default"
-        },
-        "plain_text": content,
-        "href": href
-    }
-
 def append_rich_text(
     notion_block: dict,
     content     : str,
@@ -210,41 +128,6 @@ def append_rich_text(
         add_rich_text(content, href, annotations)
     )
 
-def add_icon(
-    icon_type   : str,
-    icon_str    : str) -> dict:
-    """
-    Adds icon to rich block.
-
-    Parameters
-    ----------
-    - `icon_type`   : Type of icon. Valid options are `emoji` or `external` for URL image.
-    - `icon_str`    : Emoji string or external link.
-
-    Returns
-    -------
-    Dictionary with an icon object.
-    """
-    supported_icon_types = ['emoji', 'external']
-
-    # Check if input icon type is supported
-    if icon_type in supported_icon_types:
-
-        if icon_type == 'emoji':
-            return {
-                    "type": icon_type,
-                    icon_type : icon_str
-                }
-        elif icon_type == 'external':
-            return {
-                    "type": icon_type,
-                    icon_type : {
-                        'url' : icon_str
-                    }
-                }
-    else:
-        print(f"Incorrect icon_type. It should be 'emoji' o 'external'. Provided {icon_type}")
-        return None
 
 #**************************
 #* SUPPORTED NOTION BLOCKS
